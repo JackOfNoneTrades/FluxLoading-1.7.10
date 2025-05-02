@@ -12,7 +12,9 @@
     "GuiScreenWorkingMixin",
     "LoadingScreenRendererMixin",
     "MinecraftMixin",
-    "MixinWorldRenderer"
+    "MixinWorldRenderer",
+    "GuiSelectWorldAccessor",
+    "GuiSelectWorldMixin"
   ],
   "server": []
 }

@@ -3,16 +3,23 @@ package com.tttsaurus.fluxloading.util;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.nio.IntBuffer;
 
+import com.tttsaurus.fluxloading.FluxLoading;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.shader.Framebuffer;
 
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+
+import javax.imageio.ImageIO;
 
 @SuppressWarnings("DuplicatedCode")
 public class ScreenshotHelper {
@@ -132,4 +139,29 @@ public class ScreenshotHelper {
         return output;
     }
 
+    public static ResourceLocation getOrLoadScreenshot(String worldName) {
+        return FluxLoading.screenshotCache.computeIfAbsent(worldName, name -> {
+            File screenshot = new File(Minecraft.getMinecraft().mcDataDir, "saves/" + name + "/last_screenshot.png");
+            if (!screenshot.exists()) return null;
+
+            try {
+                BufferedImage image = ImageIO.read(screenshot);
+                if (image == null) return null;
+
+                BufferedImage resized = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g = resized.createGraphics();
+                g.drawImage(image, 0, 0, 64, 64, null);
+                g.dispose();
+
+                DynamicTexture texture = new DynamicTexture(resized);
+                ResourceLocation resource = Minecraft.getMinecraft().getTextureManager()
+                        .getDynamicTextureLocation("screenshot_" + name, texture);
+
+                return resource;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+    }
 }
