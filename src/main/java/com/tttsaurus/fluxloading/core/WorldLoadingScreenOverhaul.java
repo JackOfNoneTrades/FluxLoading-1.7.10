@@ -1,11 +1,16 @@
 package com.tttsaurus.fluxloading.core;
 
+import static com.tttsaurus.fluxloading.util.ScreenshotHelper.scaleAndCropToResolution;
+
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+
+import javax.imageio.ImageIO;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -172,13 +177,51 @@ public final class WorldLoadingScreenOverhaul {
         }
     }
 
+    /*
+     * public static void tryReadFromLocal(String folderName) {
+     * File screenshot = new File("saves/" + folderName + "/last_screenshot.png");
+     * if (screenshot.exists()) {
+     * Texture2D texture = RenderUtils.readPng(screenshot);
+     * if (texture != null) updateTexture(texture);
+     * }
+     * }
+     */
     public static void tryReadFromLocal(String folderName) {
         File screenshot = new File("saves/" + folderName + "/last_screenshot.png");
         if (screenshot.exists()) {
-            Texture2D texture = RenderUtils.readPng(screenshot);
-            if (texture != null) updateTexture(texture);
+            BufferedImage image = null;
+            try {
+                image = ImageIO.read(screenshot);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            if (image != null) {
+                int targetW = Minecraft.getMinecraft().displayWidth;
+                int targetH = Minecraft.getMinecraft().displayHeight;
+
+                BufferedImage adapted = scaleAndCropToResolution(image, targetW, targetH);
+
+                int[] pixels = new int[targetW * targetH];
+                adapted.getRGB(0, 0, targetW, targetH, pixels, 0, targetW);
+
+                ByteBuffer buffer = ByteBuffer.allocateDirect(targetW * targetH * 4);
+                for (int y = 0; y < targetH; y++) {
+                    for (int x = 0; x < targetW; x++) {
+                        int pixel = pixels[y * targetW + x];
+                        buffer.put((byte) ((pixel >> 16) & 0xFF)); // Red
+                        buffer.put((byte) ((pixel >> 8) & 0xFF)); // Green
+                        buffer.put((byte) (pixel & 0xFF)); // Blue
+                        buffer.put((byte) ((pixel >> 24) & 0xFF)); // Alpha
+                    }
+                }
+                buffer.flip();
+
+                Texture2D texture = new Texture2D(targetW, targetH, buffer);
+                if (texture != null) updateTexture(texture);
+            }
         }
     }
+
     // </editor-fold>
 
     public static void drawOverlay() {
@@ -273,8 +316,9 @@ public final class WorldLoadingScreenOverhaul {
         if (screenShotToggle) {
             screenShotToggle = false;
             Minecraft minecraft = Minecraft.getMinecraft();
-            screenShot = ScreenshotHelper
-                .saveScreenshot(minecraft.displayWidth, minecraft.displayHeight, minecraft.getFramebuffer());
+            // screenShot = ScreenshotHelper
+            // .saveScreenshot(minecraft.displayWidth, minecraft.displayHeight, minecraft.getFramebuffer());
+            screenShot = ScreenshotHelper.saveScreenshot2(minecraft, 1080, 1080);
         }
     }
 

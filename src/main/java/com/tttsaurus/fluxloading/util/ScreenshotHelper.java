@@ -1,8 +1,11 @@
 package com.tttsaurus.fluxloading.util;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.nio.IntBuffer;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.shader.Framebuffer;
@@ -70,4 +73,63 @@ public class ScreenshotHelper {
         }
         return bufferedimage;
     }
+
+    public static BufferedImage saveScreenshot2(Minecraft mc, int width, int height) {
+        int originalWidth = mc.displayWidth;
+        int originalHeight = mc.displayHeight;
+
+        int targetWidth = width;
+        int targetHeight = height;
+
+        Framebuffer fbo = new Framebuffer(targetWidth, targetHeight, true);
+        fbo.bindFramebuffer(false);
+
+        mc.displayWidth = targetWidth;
+        mc.displayHeight = targetHeight;
+
+        mc.getFramebuffer()
+            .unbindFramebuffer();
+        mc.resize(targetWidth, targetHeight);
+        mc.entityRenderer.updateCameraAndRender(0);
+
+        fbo.bindFramebuffer(true);
+        mc.entityRenderer.updateCameraAndRender(0);
+
+        BufferedImage screenshot = ScreenshotHelper.saveScreenshot(targetWidth, targetHeight, fbo);
+
+        fbo.unbindFramebuffer();
+        fbo.deleteFramebuffer();
+
+        mc.displayWidth = originalWidth;
+        mc.displayHeight = originalHeight;
+        mc.resize(originalWidth, originalHeight);
+        mc.getFramebuffer()
+            .bindFramebuffer(false);
+
+        return screenshot;
+    }
+
+    public static BufferedImage scaleAndCropToResolution(BufferedImage source, int targetWidth, int targetHeight) {
+        int srcWidth = source.getWidth();
+        int srcHeight = source.getHeight();
+
+        double scale = Math.max((double) targetWidth / srcWidth, (double) targetHeight / srcHeight);
+
+        int scaledWidth = (int) (scale * srcWidth);
+        int scaledHeight = (int) (scale * srcHeight);
+
+        Image scaled = source.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+
+        BufferedImage output = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = output.createGraphics();
+
+        int x = (scaledWidth - targetWidth) / 2;
+        int y = (scaledHeight - targetHeight) / 2;
+
+        g2d.drawImage(scaled, -x, -y, null);
+        g2d.dispose();
+
+        return output;
+    }
+
 }
