@@ -14,7 +14,8 @@
     "MinecraftMixin",
     "MixinWorldRenderer",
     "GuiSelectWorldAccessor",
-    "GuiSelectWorldMixin"
+    "GuiSelectWorldMixin",
+    "MixinMouseHelper"
   ],
   "server": []
 }

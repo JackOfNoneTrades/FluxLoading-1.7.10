@@ -7,23 +7,24 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
 
-import com.tttsaurus.fluxloading.FluxLoading;
-import com.tttsaurus.fluxloading.core.WorldLoadingScreenOverhaul;
+import javax.imageio.ImageIO;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.shader.Framebuffer;
-
 import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import javax.imageio.ImageIO;
+import com.tttsaurus.fluxloading.FluxLoading;
 
 @SuppressWarnings("DuplicatedCode")
 public class ScreenshotHelper {
+
     public static boolean suppressHandRendering = false;
 
     // Code adapted from Minecraft's ScreenshotHelper class
@@ -86,7 +87,8 @@ public class ScreenshotHelper {
 
     public static BufferedImage saveScreenshotArbitrarySize(Minecraft mc, int width, int height) {
         suppressHandRendering = true;
-        System.out.println("Taking " + width + "x" + height + " screenshot (" + mc.displayWidth + "x" + mc.displayHeight + ")");
+        System.out.println(
+            "Taking " + width + "x" + height + " screenshot (" + mc.displayWidth + "x" + mc.displayHeight + ")");
         int originalWidth = mc.displayWidth;
         int originalHeight = mc.displayHeight;
 
@@ -142,10 +144,13 @@ public class ScreenshotHelper {
         return output;
     }
 
-    public static ResourceLocation getOrLoadScreenshot(String worldName, String screenShotName, int targetWidth, int targetHeight) {
+    public static ResourceLocation getOrLoadScreenshot(String worldName, String screenShotName, int targetWidth,
+        int targetHeight) {
         String cacheKey = worldName + "_" + screenShotName;
         return FluxLoading.screenshotCache.computeIfAbsent(cacheKey, key -> {
-            File screenshot = new File(Minecraft.getMinecraft().mcDataDir, "saves/" + worldName + "/" + screenShotName + ".png");
+            File screenshot = new File(
+                Minecraft.getMinecraft().mcDataDir,
+                "saves/" + worldName + "/" + screenShotName + ".png");
             if (!screenshot.exists()) return null;
 
             try {
@@ -159,8 +164,9 @@ public class ScreenshotHelper {
 
                 DynamicTexture texture = new DynamicTexture(resized);
 
-                return Minecraft.getMinecraft().getTextureManager()
-                        .getDynamicTextureLocation("screenshot_" + cacheKey, texture);
+                return Minecraft.getMinecraft()
+                    .getTextureManager()
+                    .getDynamicTextureLocation("screenshot_" + cacheKey, texture);
             } catch (IOException e) {
                 FluxLoading.logger.error(e.getMessage(), e);
                 return null;

@@ -1,7 +1,5 @@
 package com.tttsaurus.fluxloading.proxy;
 
-import com.tttsaurus.fluxloading.event.PlayerEventHandler;
-import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 
@@ -9,7 +7,9 @@ import org.apache.logging.log4j.Logger;
 
 import com.tttsaurus.fluxloading.FluxLoadingConfig;
 import com.tttsaurus.fluxloading.core.WorldLoadingScreenOverhaul;
+import com.tttsaurus.fluxloading.event.PlayerEventHandler;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
@@ -30,8 +30,8 @@ public class ClientProxy extends CommonProxy {
         PlayerEventHandler playerEventHandler = new PlayerEventHandler();
         MinecraftForge.EVENT_BUS.register(playerEventHandler);
         FMLCommonHandler.instance()
-                .bus()
-                .register(playerEventHandler);
+            .bus()
+            .register(playerEventHandler);
     }
 
     @Override

@@ -1,6 +1,10 @@
 package com.tttsaurus.fluxloading;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.minecraft.util.ResourceLocation;
+
 import org.apache.logging.log4j.Logger;
 
 import com.tttsaurus.fluxloading.proxy.CommonProxy;
@@ -10,9 +14,6 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Mod(
     modid = "fluxloading",

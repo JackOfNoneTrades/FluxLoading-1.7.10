@@ -66,6 +66,8 @@ public final class WorldLoadingScreenOverhaul {
     private static SmoothDamp smoothDamp = null;
     private static double prevFadeOutTime = 0d;
 
+    public static boolean freezePlayer = false;
+
     public static final String LAST_SCREENSHOT_NAME = "last_screenshot";
     public static final String THUMBNAIL_NAME = "thumbnail";
 
@@ -156,6 +158,8 @@ public final class WorldLoadingScreenOverhaul {
     }
 
     public static void startFadeOutTimer() {
+        freezePlayer = true;
+        Minecraft.getMinecraft().mouseHelper.ungrabMouseCursor();
         fadeOutStopWatch = new StopWatch();
         fadeOutStopWatch.start();
         smoothDamp = new SmoothDamp(0, 1, (float) fadeOutDuration);
@@ -167,6 +171,8 @@ public final class WorldLoadingScreenOverhaul {
             fadeOutStopWatch.stop();
             fadeOutStopWatch = null;
         }
+        freezePlayer = false;
+        Minecraft.getMinecraft().mouseHelper.grabMouseCursor();
     }
 
     public static BufferedImage getScreenShot() {
@@ -317,9 +323,13 @@ public final class WorldLoadingScreenOverhaul {
         if (screenShotToggle) {
             screenShotToggle = false;
             Minecraft minecraft = Minecraft.getMinecraft();
-            screenShot = ScreenshotHelper.saveScreenshotArbitrarySize(minecraft, minecraft.displayWidth, minecraft.displayHeight);
+            screenShot = ScreenshotHelper
+                .saveScreenshotArbitrarySize(minecraft, minecraft.displayWidth, minecraft.displayHeight);
 
-            BufferedImage thumbnail = ScreenshotHelper.saveScreenshotArbitrarySize(minecraft, FluxLoadingConfig.THUMBNAIL_SIZE, FluxLoadingConfig.THUMBNAIL_SIZE);
+            BufferedImage thumbnail = ScreenshotHelper.saveScreenshotArbitrarySize(
+                minecraft,
+                FluxLoadingConfig.THUMBNAIL_SIZE,
+                FluxLoadingConfig.THUMBNAIL_SIZE);
             trySaveToLocal(thumbnail, THUMBNAIL_NAME);
         }
     }
