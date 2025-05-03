@@ -24,6 +24,8 @@ import javax.imageio.ImageIO;
 
 @SuppressWarnings("DuplicatedCode")
 public class ScreenshotHelper {
+    public static boolean suppressHandRendering = false;
+
     // Code adapted from Minecraft's ScreenshotHelper class
     // Copyright Mojang Studios, 2010-2025.
 
@@ -83,6 +85,7 @@ public class ScreenshotHelper {
     }
 
     public static BufferedImage saveScreenshotArbitrarySize(Minecraft mc, int width, int height) {
+        suppressHandRendering = true;
         System.out.println("Taking " + width + "x" + height + " screenshot (" + mc.displayWidth + "x" + mc.displayHeight + ")");
         int originalWidth = mc.displayWidth;
         int originalHeight = mc.displayHeight;
@@ -112,6 +115,7 @@ public class ScreenshotHelper {
         mc.getFramebuffer()
             .bindFramebuffer(false);
 
+        suppressHandRendering = false;
         return screenshot;
     }
 
