@@ -37,7 +37,7 @@ public class FMLClientHandlerMixin {
             }
 
             // try load screenshot
-            WorldLoadingScreenOverhaul.tryReadFromLocal(dirName);
+            WorldLoadingScreenOverhaul.tryReadFromLocalLast(dirName);
 
             WorldLoadingScreenOverhaul.setFinishedLoadingChunks(false);
             WorldLoadingScreenOverhaul.resetChunkLoadedNum();

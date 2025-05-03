@@ -24,6 +24,7 @@ public class FluxLoading {
 
     public static Logger logger;
     public static final Map<String, ResourceLocation> screenshotCache = new HashMap<>();
+    public static final ResourceLocation noThumbnailRl = new ResourceLocation("textures/misc/unknown_pack.png");
 
     @SidedProxy(
         clientSide = "com.tttsaurus.fluxloading.proxy.ClientProxy",

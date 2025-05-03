@@ -66,6 +66,9 @@ public final class WorldLoadingScreenOverhaul {
     private static SmoothDamp smoothDamp = null;
     private static double prevFadeOutTime = 0d;
 
+    public static final String LAST_SCREENSHOT_NAME = "last_screenshot";
+    public static final String THUMBNAIL_NAME = "thumbnail";
+
     // <editor-fold desc="getters & setters">
     public static void prepareScreenShot() {
         screenShotToggle = true;
@@ -165,31 +168,27 @@ public final class WorldLoadingScreenOverhaul {
             fadeOutStopWatch = null;
         }
     }
+
+    public static BufferedImage getScreenShot() {
+        return screenShot;
+    }
     // </editor-fold>
 
     // <editor-fold desc="save & read">
-    public static void trySaveToLocal() {
+    public static void trySaveToLocal(BufferedImage screenShot, String name) {
         IntegratedServer server = Minecraft.getMinecraft()
             .getIntegratedServer();
         if (server != null) {
             File worldSaveDir = new File("saves/" + server.getFolderName());
-            if (screenShot != null) RenderUtils.createPng(worldSaveDir, "last_screenshot", screenShot);
+            if (screenShot != null) RenderUtils.createPng(worldSaveDir, name, screenShot);
         }
     }
 
-    /*
-     * public static void tryReadFromLocal(String folderName) {
-     * File screenshot = new File("saves/" + folderName + "/last_screenshot.png");
-     * if (screenshot.exists()) {
-     * Texture2D texture = RenderUtils.readPng(screenshot);
-     * if (texture != null) updateTexture(texture);
-     * }
-     * }
-     */
-    public static void tryReadFromLocal(String folderName) {
-        File screenshot = new File("saves/" + folderName + "/last_screenshot.png");
+    /* Scale and crop if necessary to avoid stretched screenshots */
+    public static void tryReadFromLocalLast(String folderName) {
+        File screenshot = new File("saves/" + folderName + "/" + LAST_SCREENSHOT_NAME + ".png");
         if (screenshot.exists()) {
-            BufferedImage image = null;
+            BufferedImage image;
             try {
                 image = ImageIO.read(screenshot);
             } catch (IOException e) {
@@ -217,7 +216,7 @@ public final class WorldLoadingScreenOverhaul {
                 buffer.flip();
 
                 Texture2D texture = new Texture2D(targetW, targetH, buffer);
-                if (texture != null) updateTexture(texture);
+                updateTexture(texture);
             }
         }
     }
@@ -276,6 +275,7 @@ public final class WorldLoadingScreenOverhaul {
         else GlStateManager.disableBlend();
     }
 
+    @SuppressWarnings("unused")
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onRenderGameOverlay(RenderGameOverlayEvent.Post event) {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
@@ -311,14 +311,16 @@ public final class WorldLoadingScreenOverhaul {
         }
     }
 
+    @SuppressWarnings("unused")
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event) {
         if (screenShotToggle) {
             screenShotToggle = false;
             Minecraft minecraft = Minecraft.getMinecraft();
-            // screenShot = ScreenshotHelper
-            // .saveScreenshot(minecraft.displayWidth, minecraft.displayHeight, minecraft.getFramebuffer());
-            screenShot = ScreenshotHelper.saveScreenshot2(minecraft, 1080, 1080);
+            screenShot = ScreenshotHelper.saveScreenshotArbitrarySize(minecraft, minecraft.displayWidth, minecraft.displayHeight);
+
+            BufferedImage thumbnail = ScreenshotHelper.saveScreenshotArbitrarySize(minecraft, FluxLoadingConfig.THUMBNAIL_SIZE, FluxLoadingConfig.THUMBNAIL_SIZE);
+            trySaveToLocal(thumbnail, THUMBNAIL_NAME);
         }
     }
 

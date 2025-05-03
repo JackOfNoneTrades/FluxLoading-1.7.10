@@ -25,6 +25,7 @@ public class MinecraftMixin {
         FluxLoading.logger.info("OpenGL resources disposed");
     }
 
+    @SuppressWarnings("unused")
     @Inject(method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V", at = @At("HEAD"))
     public void loadWorld(WorldClient worldClientIn, String loadingMessage, CallbackInfo ci) {
         WorldClient world = Minecraft.getMinecraft().theWorld;
@@ -33,10 +34,11 @@ public class MinecraftMixin {
             WorldLoadingScreenOverhaul.setDrawOverlay(false);
 
             // try save screenshot
-            WorldLoadingScreenOverhaul.trySaveToLocal();
+            WorldLoadingScreenOverhaul.trySaveToLocal(WorldLoadingScreenOverhaul.getScreenShot(), WorldLoadingScreenOverhaul.LAST_SCREENSHOT_NAME);
         }
     }
 
+    @SuppressWarnings("unused")
     @WrapOperation(
         method = "displayInGameMenu",
         at = @At(

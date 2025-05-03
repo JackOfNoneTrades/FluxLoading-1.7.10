@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.IntBuffer;
 
 import com.tttsaurus.fluxloading.FluxLoading;
+import com.tttsaurus.fluxloading.core.WorldLoadingScreenOverhaul;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -81,28 +82,26 @@ public class ScreenshotHelper {
         return bufferedimage;
     }
 
-    public static BufferedImage saveScreenshot2(Minecraft mc, int width, int height) {
+    public static BufferedImage saveScreenshotArbitrarySize(Minecraft mc, int width, int height) {
+        System.out.println("Taking " + width + "x" + height + " screenshot (" + mc.displayWidth + "x" + mc.displayHeight + ")");
         int originalWidth = mc.displayWidth;
         int originalHeight = mc.displayHeight;
 
-        int targetWidth = width;
-        int targetHeight = height;
-
-        Framebuffer fbo = new Framebuffer(targetWidth, targetHeight, true);
+        Framebuffer fbo = new Framebuffer(width, height, true);
         fbo.bindFramebuffer(false);
 
-        mc.displayWidth = targetWidth;
-        mc.displayHeight = targetHeight;
+        mc.displayWidth = width;
+        mc.displayHeight = height;
 
         mc.getFramebuffer()
             .unbindFramebuffer();
-        mc.resize(targetWidth, targetHeight);
+        mc.resize(width, height);
         mc.entityRenderer.updateCameraAndRender(0);
 
         fbo.bindFramebuffer(true);
         mc.entityRenderer.updateCameraAndRender(0);
 
-        BufferedImage screenshot = ScreenshotHelper.saveScreenshot(targetWidth, targetHeight, fbo);
+        BufferedImage screenshot = ScreenshotHelper.saveScreenshot(width, height, fbo);
 
         fbo.unbindFramebuffer();
         fbo.deleteFramebuffer();
@@ -139,27 +138,27 @@ public class ScreenshotHelper {
         return output;
     }
 
-    public static ResourceLocation getOrLoadScreenshot(String worldName) {
-        return FluxLoading.screenshotCache.computeIfAbsent(worldName, name -> {
-            File screenshot = new File(Minecraft.getMinecraft().mcDataDir, "saves/" + name + "/last_screenshot.png");
+    public static ResourceLocation getOrLoadScreenshot(String worldName, String screenShotName, int targetWidth, int targetHeight) {
+        String cacheKey = worldName + "_" + screenShotName;
+        return FluxLoading.screenshotCache.computeIfAbsent(cacheKey, key -> {
+            File screenshot = new File(Minecraft.getMinecraft().mcDataDir, "saves/" + worldName + "/" + screenShotName + ".png");
             if (!screenshot.exists()) return null;
 
             try {
                 BufferedImage image = ImageIO.read(screenshot);
                 if (image == null) return null;
 
-                BufferedImage resized = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+                BufferedImage resized = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g = resized.createGraphics();
-                g.drawImage(image, 0, 0, 64, 64, null);
+                g.drawImage(image, 0, 0, targetWidth, targetHeight, null);
                 g.dispose();
 
                 DynamicTexture texture = new DynamicTexture(resized);
-                ResourceLocation resource = Minecraft.getMinecraft().getTextureManager()
-                        .getDynamicTextureLocation("screenshot_" + name, texture);
 
-                return resource;
+                return Minecraft.getMinecraft().getTextureManager()
+                        .getDynamicTextureLocation("screenshot_" + cacheKey, texture);
             } catch (IOException e) {
-                e.printStackTrace();
+                FluxLoading.logger.error(e.getMessage(), e);
                 return null;
             }
         });
